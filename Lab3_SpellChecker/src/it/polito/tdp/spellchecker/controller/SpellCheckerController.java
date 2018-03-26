@@ -1,7 +1,6 @@
 package it.polito.tdp.spellchecker.controller;
 
 import java.net.URL;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -16,9 +15,8 @@ import javafx.scene.layout.VBox;
 
 public class SpellCheckerController {
 
-	private Dictionary dictionary = new Dictionary ();
-
-	private List <String> inputText = new LinkedList <String> ();
+// 		MODEL DICTIONARY
+	private Dictionary dictionary = new Dictionary ();	
 	
 	
     @FXML // ResourceBundle that was given to the FXMLLoader
@@ -65,7 +63,6 @@ public class SpellCheckerController {
     		this.txtArea1.clear();
     		this.txtArea2.clear();
     		
-    		this.inputText.clear();
         	this.lblErrori.setText("");
         	this.lblSeconds.setText("");
         	
@@ -78,7 +75,6 @@ public class SpellCheckerController {
     	this.txtArea1.clear();
     	this.txtArea2.clear();
     	
-    	this.inputText.clear();
     	this.lblErrori.setText("");
     	this.lblSeconds.setText("");
     	
@@ -88,7 +84,7 @@ public class SpellCheckerController {
     void doSpellCheck(ActionEvent event) {
 
     	this.txtArea2.clear();
-    	this.inputText.clear();
+    	
     	this.lblErrori.setText("");
     	this.lblSeconds.setText("");
     	
@@ -99,29 +95,17 @@ public class SpellCheckerController {
     	String text = this.txtArea1.getText();
     	if (text.isEmpty())
     		return ;
-    	
-// PER ELIMINARE I SEGNI DI PUNTEGGIATURA    	
-    	String array [] = text.split(" ");
-    	for (String s : array) {
-    		s = s.replaceAll("[ \\p{Punct}]", "").trim().toLowerCase();
-    		this.inputText.add(s);
-    	}
-    	
+
 // PER CALCOLARE IL TEMPO IMPIEGATO PER IL CONTROLLO ORTOGRAFICO    	
     	long l1 = System.nanoTime();
-    	List <RichWord> lista = dictionary.spellCheckText(inputText);
-    	long l2 = System.nanoTime();
     	
-    	int errori = 0;
-    	String rich = "";
-    	for (RichWord r : lista)
-    		if (!r.isCorrect()) {
-    			errori ++;
-    			rich += r.getWord() + "\n";
-    		}
-    			
-    	this.txtArea2.setText(rich);
-    	this.lblErrori.setText("The text contains " + errori + "errors");
+//    	List <RichWord> lista = dictionary.spellCheckTextLinear(inputText);
+    	List <RichWord> lista = dictionary.spellCheckTextDichotomic(dictionary.inputText(text));
+    	
+    	long l2 = System.nanoTime();
+
+    	this.txtArea2.setText(dictionary.wrongWords(lista));
+    	this.lblErrori.setText("The text contains " + dictionary.errors(lista) + "errors");
     	this.lblSeconds.setText("Spell check completed in " + (l2 - l1) / 1E9 + "seconds");
     }
 
@@ -137,9 +121,14 @@ public class SpellCheckerController {
         assert btnClearText != null : "fx:id=\"btnClearText\" was not injected: check your FXML file 'SpellChecker.fxml'.";
         assert lblSeconds != null : "fx:id=\"lblSeconds\" was not injected: check your FXML file 'SpellChecker.fxml'.";
 
-        this.boxLingua.getItems().addAll("English", "Italian");
+        
         
     }
+
+	public void setModel(Dictionary model) {
+		this.dictionary = model;
+		this.boxLingua.getItems().addAll("English", "Italian");
+	}
     
     
 }

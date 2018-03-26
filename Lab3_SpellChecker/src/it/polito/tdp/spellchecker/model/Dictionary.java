@@ -39,13 +39,13 @@ public class Dictionary {
 
 	}
 	
-	public List<RichWord> spellCheckText(List<String> inputTextList){
+	public List<RichWord> spellCheckTextLinear(List<String> inputTextList){
 		List <RichWord> elencoParole = new LinkedList<RichWord> (); 
 		RichWord r;
 		for (String s : inputTextList) {
 				r = new RichWord (s, false);
 				
-				if (dictionary.contains(s.toLowerCase()))
+				if (this.searchLinear(s.toLowerCase()))
 					r.setCorrect(true);
 			
 				elencoParole.add(r);
@@ -54,5 +54,81 @@ public class Dictionary {
 		return elencoParole;
 	}
 	
+	
+	public boolean searchLinear(String s) {
+		if(this.dictionary.contains(s))
+//		for (String st : dictionary)
+//			if (st.toLowerCase().compareTo(s) == 0)
+				return true;
+		return false;
+	}
 
+
+	public List<RichWord> spellCheckTextDichotomic(List<String> inputTextList){
+		List <RichWord> elencoParole = new LinkedList<RichWord> (); 
+		RichWord r;
+		for (String s : inputTextList) {
+				r = new RichWord (s, false);
+				
+				if (this.searchDichotomic(s.toLowerCase()))
+					r.setCorrect(true);
+			
+				elencoParole.add(r);
+		}
+		
+		return elencoParole;
+	}
+
+
+	public boolean searchDichotomic(String s) {
+		
+		int inizio = 0;
+		int fine = this.dictionary.size();
+		
+		while (inizio != fine) {
+			
+			int medio = inizio + (fine - inizio)/2;
+			if (s.toLowerCase().compareTo(this.dictionary.get(medio)) == 0)
+				return true;
+			else if (s.toLowerCase().compareTo(this.dictionary.get(medio)) > 0)
+				inizio = medio + 1;
+			else
+				fine = medio;
+			
+		}
+		
+		return false;
+	}
+
+
+	public List<String> inputText(String text) {
+		// PER ELIMINARE I SEGNI DI PUNTEGGIATURA    	
+    	List <String> input = new LinkedList <> ();
+		String array [] = text.split(" ");
+    	for (String s : array) {
+    		s = s.replaceAll("[ \\p{Punct}]", "").trim().toLowerCase();
+    		input.add(s);
+    	}
+    	return input;
+
+	}
+
+
+	public String wrongWords(List<RichWord> lista) {
+    	String rich = "";
+    	for (RichWord r : lista)
+    		if (!r.isCorrect())
+    			rich += r.getWord() + "\n";
+
+		return rich;
+	}
+
+	public int errors(List<RichWord> lista) {
+		int errori = 0;
+    	for (RichWord r : lista)
+    		if (!r.isCorrect())
+    			errori ++;
+   
+		return errori;
+	}
 }
