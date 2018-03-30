@@ -18,6 +18,10 @@ public class SpellCheckerController {
 // 		MODEL DICTIONARY
 	private Dictionary dictionary = new Dictionary ();	
 	
+// SELEZIONARE IL TIPO DI RICERCA CON IL FLAG
+	private final boolean dichotomicSearch = false;
+	private final boolean linearSearch = false;
+
 	
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -67,6 +71,11 @@ public class SpellCheckerController {
         	this.lblSeconds.setText("");
         	
     	}
+    	else {
+    		this.vBoxBottom.setDisable(true);
+    		this.vBoxCenter.setDisable(true);
+    		this.txtArea1.setText("Seleziona una lingua!");
+    	}
     }
 
     @FXML
@@ -87,26 +96,44 @@ public class SpellCheckerController {
     	
     	this.lblErrori.setText("");
     	this.lblSeconds.setText("");
-    	
-    	
+    	    	
     	String language = this.boxLingua.getValue();
-    	this.dictionary.loadDictionary(language);
+    	if (language == null) {
+    		this.txtArea1.setText("Seleziona una lingua!");
+    		return ;
+    	}
+    	
+    	if (!this.dictionary.loadDictionary(language)) {
+    		this.txtArea1.setText("Errore nel caricamento del dizionario!");
+    		return;
+    	}
 
     	String text = this.txtArea1.getText();
-    	if (text.isEmpty())
-    		return ;
-
-// PER CALCOLARE IL TEMPO IMPIEGATO PER IL CONTROLLO ORTOGRAFICO    	
-    	long l1 = System.nanoTime();
+    	if (text.isEmpty()) {
+    		this.txtArea1.setText("Inserire un testo da correggere!");
+    		return;
+    	}
     	
-//    	List <RichWord> lista = dictionary.spellCheckTextLinear(inputText);
-    	List <RichWord> lista = dictionary.spellCheckTextDichotomic(dictionary.inputText(text));
+    	
+// PER CALCOLARE IL TEMPO IMPIEGATO PER IL CONTROLLO ORTOGRAFICO    
+    	List <String> inputText = this.dictionary.inputText(text);
+    	long l1 = System.nanoTime();
+    	List <RichWord> lista ;
+    	
+// IN BASE ALLA TIPOLOGIA DI RICERCA SELEZIONATA CON I FLAG, SI EFFETTUA UNA RICERCA SPECIFICA    	
+    	if (this.dichotomicSearch)
+    		lista = this.dictionary.spellCheckTextDichotomic(inputText);
+    	else if (this.linearSearch)
+    		lista = this.dictionary.spellCheckTextLinear(inputText);
+    	else
+    		lista = this.dictionary.spellCheckText(inputText);
     	
     	long l2 = System.nanoTime();
 
+    	
     	this.txtArea2.setText(dictionary.wrongWords(lista));
-    	this.lblErrori.setText("The text contains " + dictionary.errors(lista) + "errors");
-    	this.lblSeconds.setText("Spell check completed in " + (l2 - l1) / 1E9 + "seconds");
+    	this.lblErrori.setText("The text contains " + dictionary.errors(lista) + " errors");
+    	this.lblSeconds.setText("Spell check completed in " + (l2 - l1) / 1E9 + " seconds");
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -127,6 +154,9 @@ public class SpellCheckerController {
 
 	public void setModel(Dictionary model) {
 		this.dictionary = model;
+
+		this.txtArea1.setText("Selezionare una lingua!");
+		
 		this.boxLingua.getItems().addAll("English", "Italian");
 	}
     

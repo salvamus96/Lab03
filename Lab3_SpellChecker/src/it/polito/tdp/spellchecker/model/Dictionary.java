@@ -3,16 +3,16 @@ package it.polito.tdp.spellchecker.model;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Dictionary {
 
 	private List <String> dictionary;
-	
+	private String language;
 	
 	public Dictionary () {
-		this.dictionary = new LinkedList <String> ();
 
 	}
 	
@@ -21,8 +21,15 @@ public class Dictionary {
 		return dictionary;
 	}
 
-	public void loadDictionary(String language) {
+	public boolean loadDictionary(String language) {
 
+		if (this.dictionary != null && this.language.equals(language))
+			return true;
+		
+		// INIZIALIZZO LE VARIABILI DICHIARATE SOPRA
+		this.dictionary = new ArrayList <String> ();
+		this.language = language;
+		
 			try {
 				FileReader fr = new FileReader("rsc/" + language + ".txt");
 				BufferedReader br = new BufferedReader(fr);
@@ -31,41 +38,63 @@ public class Dictionary {
 				while ((word = br.readLine()) != null) 
 					dictionary.add(word.toLowerCase());
 			 
+				Collections.sort(this.dictionary);
 				br.close();
 
+				System.out.println("Dictionary " + language + " loaded. " + 
+									"Found " + this.dictionary.size() + " words.");
+				
+				return true;
+				
 			 } catch (IOException e){
 				 System.out.println("Errore nella lettura del file");
+				 return false;
 			 }
-
 	}
-	
-	public List<RichWord> spellCheckTextLinear(List<String> inputTextList){
-		List <RichWord> elencoParole = new LinkedList<RichWord> (); 
+
+	// RICERCA CON CONTAINS
+	public List<RichWord> spellCheckText(List<String> inputTextList){
+		List <RichWord> elencoParole = new ArrayList<RichWord> (); 
 		RichWord r;
 		for (String s : inputTextList) {
 				r = new RichWord (s, false);
 				
-				if (this.searchLinear(s.toLowerCase()))
+				if (this.dictionary.contains(s.toLowerCase()))
 					r.setCorrect(true);
 			
 				elencoParole.add(r);
-		}
-		
+		}		
 		return elencoParole;
 	}
+
 	
+	// RICERCA LINEARE
+	public List<RichWord> spellCheckTextLinear(List<String> inputTextList){
+		List <RichWord> elencoParole = new ArrayList<RichWord> (); 
+		RichWord r;
+		for (String s : inputTextList) {
+			
+			r = new RichWord (s, false);
+			boolean found = false;
 	
-	public boolean searchLinear(String s) {
-		if(this.dictionary.contains(s))
-//		for (String st : dictionary)
-//			if (st.toLowerCase().compareTo(s) == 0)
-				return true;
-		return false;
+			for (String word : this.dictionary)
+				if (word.toLowerCase().equals(word)) {
+					found = true;
+					break;
+				}
+			
+			if (found)
+				r.setCorrect(true);
+			
+			elencoParole.add(r);
+		}
+		return elencoParole;
 	}
 
-
+	
+	// RICERCA DICOTOMICA
 	public List<RichWord> spellCheckTextDichotomic(List<String> inputTextList){
-		List <RichWord> elencoParole = new LinkedList<RichWord> (); 
+		List <RichWord> elencoParole = new ArrayList<RichWord> (); 
 		RichWord r;
 		for (String s : inputTextList) {
 				r = new RichWord (s, false);
@@ -102,15 +131,18 @@ public class Dictionary {
 
 
 	public List<String> inputText(String text) {
-		// PER ELIMINARE I SEGNI DI PUNTEGGIATURA    	
-    	List <String> input = new LinkedList <> ();
-		String array [] = text.split(" ");
-    	for (String s : array) {
-    		s = s.replaceAll("[ \\p{Punct}]", "").trim().toLowerCase();
-    		input.add(s);
-    	}
-    	return input;
+		// PER ELIMINARE I SEGNI DI PUNTEGGIATURA E I PUNTI DI RITORNO ACCAPO	
 
+		List <String> input = new ArrayList <> ();
+
+		text = text.replaceAll("[\\p{Punct}]", "");
+    	String array [] = text.split(" ");
+    	
+    	// ANCHE GLI SPAZI EXTRA VENGONO CONSIDERATI COME ERRORI
+    	for (String s : array)
+    		input.add(s.trim().toLowerCase());
+    
+    	return input; 
 	}
 
 
