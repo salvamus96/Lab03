@@ -135,9 +135,11 @@ public class Dictionary {
 
 		List <String> input = new ArrayList <> ();
 
+// importante altrimenti con \n si considerano due parole su due righe come una singola parola
+		text = text.replace("\n", " ");  
 		text = text.replaceAll("[\\p{Punct}]", "");
     	String array [] = text.split(" ");
-    	
+
     	// ANCHE GLI SPAZI EXTRA VENGONO CONSIDERATI COME ERRORI
     	for (String s : array)
     		input.add(s.trim().toLowerCase());

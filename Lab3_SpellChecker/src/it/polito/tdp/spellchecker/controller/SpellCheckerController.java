@@ -133,7 +133,7 @@ public class SpellCheckerController {
     	
     	this.txtArea2.setText(dictionary.wrongWords(lista));
     	this.lblErrori.setText("The text contains " + dictionary.errors(lista) + " errors");
-    	this.lblSeconds.setText("Spell check completed in " + (l2 - l1) / 1E9 + " seconds");
+    	this.lblSeconds.setText("Spell check completed in " + (l2 - l1) / 10E9 + " seconds");
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
